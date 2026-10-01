@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-contrast="0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOSAIC Debug</title>
+<meta name="description" content="A local triage tool for investigating Mosaic issue reports from debug dumps, with inventory, diagnostic signals and side-by-side comparison.">
+<meta name="color-scheme" content="dark light">
+<link rel="icon" href="assets/favicon.png" type="image/png">
+<script type="importmap">
+{
+  "imports": {
+    "@material/web/": "https://esm.sh/@material/web@2.5.0/",
+    "@material/material-color-utilities": "https://esm.sh/@material/material-color-utilities@0.4.0"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Roboto+Flex:opsz,wght@8..144,100..1000&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/app.css">
+<script type="module" src="src/main.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="app-bar" id="app-bar">
+  <div class="app-bar__row">
+    <div class="app-bar__lead">
+      <md-outlined-icon-button class="app-bar__drawer-btn" data-action="toggle-drawer" aria-label="Open navigation" title="Navigation">
+        <md-icon>menu</md-icon>
+      </md-outlined-icon-button>
+      <span class="brand">
+        <span class="brand__mark">
+          <img class="brand__logo brand__logo--on-dark" src="assets/images/logo.png" alt="MOSAIC Debug" width="675" height="331" decoding="async">
+          <img class="brand__logo brand__logo--on-light" src="assets/images/logo-ink.png" alt="" aria-hidden="true" width="675" height="331" decoding="async">
+        </span>
+      </span>
+    </div>
+    <div class="app-bar__actions">
+      <md-text-button class="action-load" data-action="open-dump">
+        <md-icon slot="icon">folder_open</md-icon>Load dump
+      </md-text-button>
+      <md-text-button class="action-compare" data-action="load-reference" hidden>
+        <md-icon slot="icon">compare_arrows</md-icon>Reference
+      </md-text-button>
+      <md-text-button data-action="open-report" hidden id="report-button">
+        <md-icon slot="icon">description</md-icon>Report
+      </md-text-button>
+      <md-outlined-icon-button id="theme-button" data-action="open-theme" aria-label="Appearance" title="Appearance">
+        <md-icon id="theme-icon">dark_mode</md-icon>
+      </md-outlined-icon-button>
+      <md-outlined-icon-button data-action="open-help" aria-label="Help and shortcuts" title="Help (?)">
+        <md-icon>help</md-icon>
+      </md-outlined-icon-button>
+    </div>
+  </div>
+  <div class="dump-bar" id="dump-bar" hidden></div>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Sections">
+    <a class="rail__dest" href="#/overview" data-view="overview">
+      <span class="rail__indicator"><md-icon>dashboard</md-icon></span>
+      <span class="rail__label">Overview</span>
+    </a>
+    <a class="rail__dest" href="#/findings" data-view="findings">
+      <span class="rail__indicator"><md-icon>troubleshoot</md-icon></span>
+      <span class="rail__label">Triage signals</span>
+      <span class="rail__badge" id="rail-findings" hidden></span>
+    </a>
+    <a class="rail__dest" href="#/mods" data-view="mods">
+      <span class="rail__indicator"><md-icon>extension</md-icon></span>
+      <span class="rail__label">Mods</span>
+      <span class="rail__badge rail__badge--muted" id="rail-mods" hidden></span>
+    </a>
+    <a class="rail__dest" href="#/plugins" data-view="plugins">
+      <span class="rail__indicator"><md-icon>memory</md-icon></span>
+      <span class="rail__label">Plugins</span>
+      <span class="rail__badge rail__badge--muted" id="rail-plugins" hidden></span>
+    </a>
+    <a class="rail__dest" href="#/environment" data-view="environment">
+      <span class="rail__indicator"><md-icon>devices</md-icon></span>
+      <span class="rail__label">Environment</span>
+    </a>
+    <a class="rail__dest" href="#/raw" data-view="raw">
+      <span class="rail__indicator"><md-icon>data_object</md-icon></span>
+      <span class="rail__label">Raw dump</span>
+    </a>
+    <a class="rail__dest" href="#/compare" data-view="compare">
+      <span class="rail__indicator"><md-icon>compare_arrows</md-icon></span>
+      <span class="rail__label">Compare</span>
+    </a>
+  </nav>
+
+  <main class="content" id="main" tabindex="-1"></main>
+</div>
+
+<dialog class="drawer" id="drawer" aria-label="Sections">
+  <div class="drawer__head">
+    <span class="drawer__brand">
+      <span class="brand__mark brand__mark--drawer">
+        <img class="brand__logo brand__logo--on-dark" src="assets/images/logo.png" alt="MOSAIC Debug" width="675" height="331" decoding="async">
+        <img class="brand__logo brand__logo--on-light" src="assets/images/logo-ink.png" alt="" aria-hidden="true" width="675" height="331" decoding="async">
+      </span>
+    </span>
+    <md-icon-button data-action="close-drawer" aria-label="Close navigation"><md-icon>close</md-icon></md-icon-button>
+  </div>
+  <nav class="drawer__nav" aria-label="Sections"></nav>
+</dialog>
+
+<div class="drop-overlay" id="drop-overlay" aria-hidden="true">
+  <div class="drop-overlay__frame">
+    <md-icon>upload_file</md-icon>
+    <span class="drop-overlay__title">Release to read the dump</span>
+    <span class="drop-overlay__hint">Drop two files to compare them automatically</span>
+  </div>
+</div>
+
+<md-dialog id="dialog-detail" class="dialog dialog--detail">
+  <div slot="headline" class="dialog__headline"></div>
+  <div slot="content" class="dialog__content"></div>
+  <div slot="actions" class="dialog__actions"></div>
+</md-dialog>
+
+<md-dialog id="dialog-help" class="dialog">
+  <div slot="headline" class="dialog__headline">Using triage signals</div>
+  <div slot="content" class="dialog__content"></div>
+  <div slot="actions" class="dialog__actions"></div>
+</md-dialog>
+
+<md-dialog id="dialog-report" class="dialog">
+  <div slot="headline" class="dialog__headline">Triage report</div>
+  <div slot="content" class="dialog__content"></div>
+  <div slot="actions" class="dialog__actions"></div>
+</md-dialog>
+
+<md-menu id="menu-theme">
+  <md-menu-item data-theme-choice="system"><div slot="headline">System</div><md-icon slot="end">brightness_auto</md-icon></md-menu-item>
+  <md-menu-item data-theme-choice="light"><div slot="headline">Light</div><md-icon slot="end">light_mode</md-icon></md-menu-item>
+  <md-menu-item data-theme-choice="dark"><div slot="headline">Dark</div><md-icon slot="end">dark_mode</md-icon></md-menu-item>
+  <md-menu-item data-contrast-choice="0"><div slot="headline">Standard contrast</div></md-menu-item>
+  <md-menu-item data-contrast-choice="0.5"><div slot="headline">Medium contrast</div></md-menu-item>
+  <md-menu-item data-contrast-choice="1"><div slot="headline">High contrast</div></md-menu-item>
+</md-menu>
+
+<md-menu id="menu-report">
+  <md-menu-item data-report="copy-markdown"><div slot="headline">Copy as Markdown</div><md-icon slot="end">content_copy</md-icon></md-menu-item>
+  <md-menu-item data-report="download-markdown"><div slot="headline">Download .md</div><md-icon slot="end">download</md-icon></md-menu-item>
+  <md-menu-item data-report="download-json"><div slot="headline">Download original JSON</div><md-icon slot="end">data_object</md-icon></md-menu-item>
+  <md-menu-item data-report="copy-json"><div slot="headline">Copy original JSON</div><md-icon slot="end">content_copy</md-icon></md-menu-item>
+</md-menu>
+
+<input type="file" id="file-input" accept=".json,application/json,text/plain" multiple hidden>
+<div class="toast-host" id="toasts" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">MOSAIC Debug needs JavaScript enabled: it reads the dump entirely in your browser.</p></noscript>
+</body>
+</html>
