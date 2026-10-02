@@ -1,4 +1,4 @@
-import { formatNumber, plural } from '../model.js';
+import { formatBytes, formatNumber, plural } from '../model.js';
 import { MOD_FLAGS, PLUGIN_FLAGS, filterEntries, parseList } from '../filters.js';
 import { clearFiltersButton, flagChips, focusBanner, resultCount, searchField, sortSelect, statusChips, toolbar } from './controls.js';
 import { emptyState, esc, icon, statusChip, valueText } from './pieces.js';
@@ -10,7 +10,6 @@ const MOD_FLAG_TONE = {
   'auto-named': 'warn',
   'no-metadata': 'muted',
   'no-source': 'muted',
-  'name-mismatch': 'muted',
   'orphan-copy': 'crit'
 };
 
@@ -87,6 +86,35 @@ function categorySelect(model, value) {
   return `<md-outlined-select class="control control--category" data-control="category" label="Category">${options.join('')}</md-outlined-select>`;
 }
 
+export function renderOtherFiles(state, kind) {
+  const all = state.model.libraries.otherFiles.items.filter((entry) => entry.library === kind);
+  if (!all.length) return '';
+  const query = (state.params.q || '').trim().toLowerCase();
+  const status = state.params.status || 'all';
+  const items = all.filter((entry) =>
+    (!query || [entry.name, entry.relativePath, entry.status, entry.sizeBytes].some((value) => String(value ?? '').toLowerCase().includes(query))) &&
+    (status === 'all' || (status === 'other' ? !['active', 'disabled'].includes(entry.status) : entry.status === status))
+  );
+  const sort = state.params.sort;
+  const dir = state.params.dir === 'desc' ? -1 : 1;
+  items.sort((a, b) => {
+    const key = sort === 'folder' ? 'relativePath' : ['name', 'status'].includes(sort) ? sort : 'index';
+    return key === 'index' ? (a.index - b.index) * dir : String(a[key] ?? '').localeCompare(String(b[key] ?? '')) * dir;
+  });
+  return `<section class="panel">
+    <h2 class="block__title">Other files (${formatNumber(items.length)} / ${formatNumber(all.length)})</h2>
+    ${items.length ? `<div class="table-wrap"><table class="table">
+      <thead><tr><th scope="col">Status</th><th scope="col">File</th><th scope="col">Relative path</th><th scope="col">Size</th><th scope="col"><span class="sr-only">Open details</span></th></tr></thead>
+      <tbody>${items.map((entry) => `<tr class="row" data-action="inspect" data-kind="other-file" data-id="${esc(entry.id)}" tabindex="0">
+        <td class="td" data-label="Status">${statusChip(entry.status)}</td>
+        <td class="td" data-label="File"><span class="cell__title value--mono">${esc(entry.name)}</span></td>
+        <td class="td" data-label="Relative path">${valueText(entry.relativePath, { mono: true })}</td>
+        <td class="td" data-label="Size">${valueText(formatBytes(entry.sizeBytes))}</td>
+        <td class="td td--go"><span class="row__go">${icon('chevron_right')}</span></td>
+      </tr>`).join('')}</tbody></table></div>` : '<p class="prose">No other file matches the search and status filters.</p>'}
+  </section>`;
+}
+
 export function renderLibrary(state, kind) {
   const isPlugins = kind === 'plugins';
   const library = isPlugins ? state.model.libraries.plugins : state.model.libraries.mods;
@@ -144,5 +172,6 @@ export function renderLibrary(state, kind) {
     })}
     ${resultCount(items.length, library.items.length, isPlugins ? 'plugins' : 'mods')}
     <div class="results">${body}</div>
+    ${renderOtherFiles(state, kind)}
   </div>`;
 }

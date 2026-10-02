@@ -7,7 +7,6 @@ export const MOD_FLAGS = [
   { id: 'auto-named', label: 'Auto-named', icon: 'schedule', hint: 'Named after its install timestamp' },
   { id: 'no-metadata', label: 'No metadata', icon: 'label_off', hint: 'No version, author and category' },
   { id: 'no-source', label: 'No source URL', icon: 'public_off', hint: 'No GameBanana reference recorded' },
-  { id: 'name-mismatch', label: 'Name differs from folder', icon: 'drive_file_rename_outline', hint: 'Display name and folder name diverge' },
   { id: 'orphan-copy', label: 'Orphan copy', icon: 'folder_delete', hint: 'Batch copy whose original folder is gone' }
 ];
 

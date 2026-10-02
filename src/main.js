@@ -8,9 +8,10 @@ import { renderOverview } from './ui/overview.js';
 import { renderFindings } from './ui/findings.js';
 import { renderLibrary } from './ui/library.js';
 import { renderEnvironment } from './ui/environment.js';
+import { renderCssEditor } from './ui/css-editor.js';
 import { renderRaw } from './ui/raw.js';
 import { renderCompare } from './ui/compare.js';
-import { environmentText, findingText, openHelpDialog, openModDialog, openPluginDialog, openReportDialog } from './ui/dialogs.js';
+import { environmentText, findingText, openHelpDialog, openModDialog, openPluginDialog, openOtherFileDialog, openCharacterDialog, openReportDialog } from './ui/dialogs.js';
 
 const main = document.getElementById('main');
 const fileInput = document.getElementById('file-input');
@@ -24,6 +25,7 @@ const VIEW_RENDERERS = {
   mods: (current) => renderLibrary(current, 'mods'),
   plugins: (current) => renderLibrary(current, 'plugins'),
   environment: renderEnvironment,
+  'css-editor': renderCssEditor,
   raw: renderRaw,
   compare: renderCompare
 };
@@ -264,7 +266,9 @@ const actions = {
     const dir = same && state.params.dir !== 'desc' ? 'desc' : same ? 'asc' : 'asc';
     patchParams({ sort: key, dir });
   },
+  'inspect-character': (element) => openCharacterDialog(state, element.dataset.list, element.dataset.index),
   'inspect': (element) => {
+    if (element.dataset.kind === 'other-file') return openOtherFileDialog(state, element.dataset.id);
     if (element.dataset.kind === 'plugin') openPluginDialog(state, element.dataset.id);
     else openModDialog(state, element.dataset.id);
   },
@@ -329,8 +333,8 @@ document.addEventListener('keydown', (event) => {
     focusSearch();
     return;
   }
-  if (event.altKey && /^[1-7]$/.test(event.key)) {
-    const view = ['overview', 'findings', 'mods', 'plugins', 'environment', 'raw', 'compare'][Number(event.key) - 1];
+  if (event.altKey && /^[1-8]$/.test(event.key)) {
+    const view = ['overview', 'findings', 'mods', 'plugins', 'environment', 'raw', 'compare', 'css-editor'][Number(event.key) - 1];
     event.preventDefault();
     navigateTo(view);
     return;

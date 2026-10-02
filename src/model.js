@@ -133,6 +133,19 @@ function normalizeLibrary(section, notes, label, mapper) {
   };
 }
 
+function normalizeOtherFiles(section, notes) {
+  const items = asArray(section?.items).map((item, index) => ({
+    kind: 'other-file', id: `other-file:${index}`, index,
+    library: text(item?.library), status: text(item?.status),
+    name: text(item?.name) || text(item?.relativePath) || `file-${index + 1}`,
+    relativePath: text(item?.relativePath), sizeBytes: asNumber(item?.sizeBytes), raw: item
+  }));
+  if (section != null && (!isObject(section) || !Array.isArray(section.items))) {
+    notes.push({ level: 'warning', path: 'libraries.otherFiles.items', message: 'Expected other files to be a list.' });
+  }
+  return { count: asNumber(section?.count), items };
+}
+
 export function normalizeDump(raw, fileName) {
   const notes = [];
   if (!isObject(raw)) {
@@ -144,7 +157,8 @@ export function normalizeDump(raw, fileName) {
       configuration: { runMode: null, emulatorType: null, modsPath: null, pluginsPath: null, extra: {} },
       libraries: {
         mods: normalizeLibrary(null, [], 'mods', normalizeMod),
-        plugins: normalizeLibrary(null, [], 'plugins', normalizePlugin)
+        plugins: normalizeLibrary(null, [], 'plugins', normalizePlugin),
+        otherFiles: normalizeOtherFiles(null, [])
       },
       notes
     };
@@ -198,7 +212,8 @@ export function normalizeDump(raw, fileName) {
     },
     libraries: {
       mods: normalizeLibrary(libraries.mods, notes, 'mods', normalizeMod),
-      plugins: normalizeLibrary(libraries.plugins, notes, 'plugins', normalizePlugin)
+      plugins: normalizeLibrary(libraries.plugins, notes, 'plugins', normalizePlugin),
+      otherFiles: normalizeOtherFiles(libraries.otherFiles, notes)
     },
     notes
   };
@@ -244,7 +259,6 @@ export function analyzeModel(model) {
       if (!knownFolders.has(mod.batchBase.trim().toLowerCase())) mod.flags.add('orphan-copy');
     }
     if (mod.autoNamed) mod.flags.add('auto-named');
-    if (!mod.nameMatchesFolder) mod.flags.add('name-mismatch');
     if (!mod.version && !mod.authors && !mod.category) mod.flags.add('no-metadata');
     if (!mod.version) mod.flags.add('no-version');
     if (!mod.authors) mod.flags.add('no-author');

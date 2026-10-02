@@ -1918,6 +1918,49 @@ body.is-empty .welcome {
   color: var(--md-sys-color-on-surface-variant);
 }
 
+.css-editor__character {
+  color: var(--md-sys-color-primary);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.css-editor__character:hover {
+  text-decoration: underline;
+}
+
+.css-editor__slot {
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  padding: 12px 0;
+}
+
+.css-editor__slot summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.css-editor__slot .def__content {
+  white-space: pre-wrap;
+}
+
+.css-editor__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.view--css-editor > * + * {
+  margin-top: 20px;
+}
+
+.view--css-editor .panel,
+.view--css-editor .panel__title,
+.css-editor__table .td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .env-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

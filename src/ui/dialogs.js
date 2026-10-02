@@ -40,7 +40,7 @@ export function openHelpDialog() {
       <ul class="help__list help__list--keys">
         <li><kbd>/</kbd><span>Focus the search field of the current view</span></li>
         <li><kbd>?</kbd><span>Open this help</span></li>
-        <li><kbd>Alt</kbd> + <kbd>1…7</kbd><span>Switch view</span></li>
+        <li><kbd>Alt</kbd> + <kbd>1…8</kbd><span>Switch view</span></li>
         <li><kbd>Esc</kbd><span>Close a dialog or the navigation drawer</span></li>
         <li><kbd>K</kbd> / <kbd>J</kbd><span>Move between rows in a list</span></li>
         <li><kbd>Enter</kbd><span>Open the selected row</span></li>
@@ -92,6 +92,37 @@ function siblingBlock(model, mod) {
       </li>`).join('')}
     </ul>
   </div>`).join('');
+}
+
+export function openCharacterDialog(state, list, index) {
+  if (!['visibleCharacters', 'hiddenCharacters'].includes(list) || !/^\d+$/.test(String(index))) return;
+  const entries = state.model?.raw?.cssEditor?.layout?.[list];
+  const character = Array.isArray(entries) ? entries[Number(index)] : null;
+  if (!character || typeof character !== 'object' || Array.isArray(character)) return;
+  const valueText = (value) => value == null ? null : typeof value === 'boolean' ? (value ? 'Yes' : 'No') : typeof value === 'object' ? JSON.stringify(value) : String(value);
+  const fields = (record) => defList(Object.entries(record).map(([key, value]) => ({
+    label: key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, letter => letter.toUpperCase()),
+    value: valueText(value),
+    mono: /id$|kind|label|index/i.test(key)
+  })));
+  const { slots, ...metadata } = character;
+  const content = `<div class="detail">
+    <p class="prose">${list === 'visibleCharacters' ? 'Visible character' : 'Hidden character'} · CSS Editor</p>
+    ${fields(metadata)}
+    <section class="detail__block">
+      <h3 class="block__title">Costume slots${Array.isArray(slots) ? ` · ${slots.length}` : ''}</h3>
+      ${Array.isArray(slots) && slots.length ? slots.map((slot, position) => {
+        const record = slot && typeof slot === 'object' && !Array.isArray(slot) ? slot : { value: slot };
+        return `<details class="css-editor__slot"${position === 0 ? ' open' : ''}>
+          <summary>Slot ${esc(valueText(record.slotIndex) ?? position)}</summary>
+          ${fields(record)}
+        </details>`;
+      }).join('') : `<p class="prose">${Array.isArray(slots) ? 'No costume slots recorded.' : 'Costume slots not available in this dump.'}</p>`}
+    </section>
+  </div>`;
+  setDialog(detail, `<div class="dialog__title"><span class="dialog__name">${esc(valueText(character.displayName) || valueText(character.id) || `Character ${Number(index) + 1}`)}</span></div>`, content, `
+    <md-text-button data-action="copy" data-copy="${esc(JSON.stringify(character, null, 2))}"><md-icon slot="icon">content_copy</md-icon>Copy character</md-text-button>
+    <md-filled-button data-action="close-dialog">Close</md-filled-button>`);
 }
 
 export function openModDialog(state, id) {
@@ -156,6 +187,22 @@ export function openPluginDialog(state, id) {
   setDialog(detail, `<div class="dialog__title"><span class="dialog__name value--mono">${esc(plugin.name)}</span>${statusChip(plugin.status)}</div>`, content, `
     <md-text-button data-action="open-raw" data-path="${esc(rawPath)}"><md-icon slot="icon">data_object</md-icon>Show in raw dump</md-text-button>
     <md-filled-button data-action="close-dialog">Close</md-filled-button>`);
+}
+
+export function openOtherFileDialog(state, id) {
+  const entry = state.model.libraries.otherFiles.items.find((item) => item.id === id);
+  if (!entry) return;
+  const rawPath = `$.libraries.otherFiles.items[${entry.index}]`;
+  setDialog(detail, `<div class="dialog__title"><span class="dialog__name value--mono">${esc(entry.name)}</span>${statusChip(entry.status)}</div>`,
+    `<div class="detail">${defList([
+      { label: 'Library', value: entry.library },
+      { label: 'File', value: entry.name, mono: true },
+      { label: 'Status', value: entry.status },
+      { label: 'Relative path', value: entry.relativePath, mono: true, copy: true },
+      { label: 'Size', value: formatBytes(entry.sizeBytes) },
+      { label: 'Size in bytes', value: formatNumber(entry.sizeBytes) }
+    ])}<div class="detail__block"><h3 class="block__title">Full record</h3><pre class="report__pre">${esc(JSON.stringify(entry.raw, null, 2))}</pre></div></div>`,
+    `<md-text-button data-action="open-raw" data-path="${esc(rawPath)}">Show in raw dump</md-text-button><md-filled-button data-action="close-dialog">Close</md-filled-button>`);
 }
 
 export function closeDialog(element) {

@@ -10,7 +10,8 @@ const NAV = [
   { view: 'plugins', label: 'Plugins', icon: 'memory' },
   { view: 'environment', label: 'Environment', icon: 'devices' },
   { view: 'raw', label: 'Raw dump', icon: 'data_object' },
-  { view: 'compare', label: 'Compare', icon: 'compare_arrows' }
+  { view: 'compare', label: 'Compare', icon: 'compare_arrows' },
+  { view: 'css-editor', label: 'CSS Editor', icon: 'grid_view' }
 ];
 
 const refs = {};

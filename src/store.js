@@ -4,7 +4,7 @@ import { diffDumps } from './diff.js';
 import { applyTheme } from './theme.js';
 import { clearDump, loadDump, readPrefs, saveDump, writePrefs } from './storage.js';
 
-export const VIEWS = ['overview', 'findings', 'mods', 'plugins', 'environment', 'raw', 'compare'];
+export const VIEWS = ['overview', 'findings', 'mods', 'plugins', 'environment', 'raw', 'compare', 'css-editor'];
 
 export const state = {
   view: 'overview',
