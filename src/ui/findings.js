@@ -132,13 +132,17 @@ export function renderFindings(state) {
     <header class="view__head">
       <div>
         <h1 class="view__title">Triage signals</h1>
-        <p class="view__sub">${formatNumber(all.length)} automatic ${plural(all.length, 'check')} covering duplicates, source records, metadata, configuration, plugins and system. Treat matches as investigation leads: compare their evidence with the reported symptoms before drawing conclusions.</p>
+        <p class="view__sub">${formatNumber(all.length)} automatic ${plural(all.length, 'check')} covering duplicates, source records, metadata, configuration, plugins and system.</p>
       </div>
       <div class="view__actions">
         <md-text-button data-action="toggle-expand" data-value="${expandAll ? '0' : '1'}">${icon(expandAll ? 'unfold_less' : 'unfold_more')}${expandAll ? 'Collapse all' : 'Expand all'}</md-text-button>
         ${clearFiltersButton(filterCount)}
       </div>
     </header>
+    <aside class="triage-warning" role="note">
+      ${icon('warning', 'triage-warning__icon')}
+      <p><strong>Warning:</strong> These signals may be wrong or incomplete, and some details may not appear here. Review the dump, symptoms and logs yourself before drawing a conclusion.</p>
+    </aside>
     ${toolbar({
       leading: searchField({ value: state.params.q || '', label: 'Search signals', placeholder: 'duplicate, source, version…' }),
       trailing: sortSelect({ value: state.params.sort === 'count' || state.params.sort === 'family' || state.params.sort === 'name' ? state.params.sort : 'severity' }),
