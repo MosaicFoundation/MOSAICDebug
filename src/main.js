@@ -51,13 +51,20 @@ function restoreFocus(snapshot) {
   if (!snapshot) return;
   const target = main.querySelector(`[data-control="${snapshot.control}"]`);
   if (!target) return;
-  target.focus();
-  try {
-    const input = target.shadowRoot?.querySelector('input, textarea');
-    if (input && snapshot.start !== null) input.setSelectionRange(snapshot.start, snapshot.end ?? snapshot.start);
-  } catch {
-    return;
-  }
+  const restore = () => {
+    if (!target.isConnected) return;
+    const input = snapshot.control === 'q' ? target.shadowRoot?.querySelector('input, textarea') : null;
+    (input || target).focus();
+    if (input && snapshot.start !== null) {
+      try {
+        input.setSelectionRange(snapshot.start, snapshot.end ?? snapshot.start);
+      } catch {
+        return;
+      }
+    }
+  };
+  if (snapshot.control === 'q' && target.updateComplete?.then) target.updateComplete.then(restore);
+  else restore();
 }
 
 const scrollPositions = new Map();
