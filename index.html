@@ -2,10 +2,11 @@
 <html lang="en" data-theme="dark" data-contrast="0">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MOSAIC Debug</title>
-<meta name="description" content="A local triage tool for investigating Mosaic issue reports from debug dumps, with inventory, diagnostic signals and side-by-side comparison.">
+<meta name="description" content="Investigate Mosaic debug dumps locally, compare reports, and optionally share a JSON link for 7 days.">
 <meta name="color-scheme" content="dark light">
+<meta name="referrer" content="no-referrer">
 <link rel="icon" href="assets/favicon.png" type="image/png">
 <script type="importmap">
 {
@@ -39,6 +40,7 @@
       </span>
     </div>
     <div class="app-bar__actions">
+      <md-text-button id="share-button" data-action="share-dump" hidden><md-icon slot="icon">share</md-icon>Share dump</md-text-button>
       <md-text-button class="action-load" data-action="open-dump">
         <md-icon slot="icon">folder_open</md-icon>Load dump
       </md-text-button>
@@ -48,7 +50,7 @@
       <md-text-button data-action="open-report" hidden id="report-button">
         <md-icon slot="icon">description</md-icon>Report
       </md-text-button>
-      <md-text-button href="https://github.com/MosaicFoundation/MOSAICDebug" target="_blank" rel="noopener noreferrer" aria-label="Open MOSAIC Debug on GitHub">
+      <md-text-button href="https://github.com/CompagesWorks/MOSAICDebug" target="_blank" rel="noopener noreferrer" aria-label="Open MOSAIC Debug on GitHub">
         <md-icon slot="icon">code</md-icon>GitHub
       </md-text-button>
       <md-outlined-icon-button id="theme-button" data-action="open-theme" aria-label="Appearance" title="Appearance">
@@ -104,6 +106,29 @@
   <main class="content" id="main" tabindex="-1"></main>
 </div>
 
+<nav class="bottom-nav" id="bottom-nav" aria-label="Sections">
+  <a class="bottom-nav__dest" href="#/overview" data-view="overview">
+    <span class="bottom-nav__indicator"><md-icon>dashboard</md-icon></span>
+    <span class="bottom-nav__label">Overview</span>
+  </a>
+  <a class="bottom-nav__dest" href="#/findings" data-view="findings">
+    <span class="bottom-nav__indicator"><md-icon>troubleshoot</md-icon><span class="rail__badge" data-badge="findings" hidden></span></span>
+    <span class="bottom-nav__label">Signals</span>
+  </a>
+  <a class="bottom-nav__dest" href="#/mods" data-view="mods">
+    <span class="bottom-nav__indicator"><md-icon>extension</md-icon></span>
+    <span class="bottom-nav__label">Mods</span>
+  </a>
+  <a class="bottom-nav__dest" href="#/plugins" data-view="plugins">
+    <span class="bottom-nav__indicator"><md-icon>memory</md-icon></span>
+    <span class="bottom-nav__label">Plugins</span>
+  </a>
+  <button type="button" class="bottom-nav__dest" data-action="toggle-drawer" data-more="environment raw compare css-editor" aria-label="More sections and actions">
+    <span class="bottom-nav__indicator"><md-icon>menu</md-icon></span>
+    <span class="bottom-nav__label">More</span>
+  </button>
+</nav>
+
 <dialog class="drawer" id="drawer" aria-label="Sections">
   <div class="drawer__head">
     <span class="drawer__brand">
@@ -115,6 +140,13 @@
     <md-icon-button data-action="close-drawer" aria-label="Close navigation"><md-icon>close</md-icon></md-icon-button>
   </div>
   <nav class="drawer__nav" aria-label="Sections"></nav>
+  <div class="drawer__actions" aria-label="File actions">
+    <button type="button" class="drawer__dest" data-action="open-dump"> <md-icon>folder_open</md-icon><span>Load dump</span></button>
+    <button type="button" class="drawer__dest" id="drawer-reference" data-action="load-reference" hidden><md-icon>compare_arrows</md-icon><span>Load reference</span></button>
+    <button type="button" class="drawer__dest" id="drawer-share" data-action="share-dump" hidden><md-icon>share</md-icon><span>Share dump</span></button>
+    <button type="button" class="drawer__dest" id="drawer-report" data-action="open-report-dialog" hidden><md-icon>description</md-icon><span>Open report</span></button>
+    <a class="drawer__dest" href="https://github.com/CompagesWorks/MOSAICDebug" target="_blank" rel="noopener noreferrer"><md-icon>code</md-icon><span>GitHub</span></a>
+  </div>
 </dialog>
 
 <div class="drop-overlay" id="drop-overlay" aria-hidden="true">
@@ -139,6 +171,12 @@
 
 <md-dialog id="dialog-report" class="dialog">
   <div slot="headline" class="dialog__headline">Triage report</div>
+  <div slot="content" class="dialog__content"></div>
+  <div slot="actions" class="dialog__actions"></div>
+</md-dialog>
+
+<md-dialog id="dialog-share" class="dialog">
+  <div slot="headline" class="dialog__headline">Share debug dump</div>
   <div slot="content" class="dialog__content"></div>
   <div slot="actions" class="dialog__actions"></div>
 </md-dialog>
